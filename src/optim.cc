@@ -13,4 +13,20 @@ void GD::step(){
         *it -= param_update;
     }
 }
+
+Moment::Moment(ParStack& p_list, double l_rate_, double moment_)
+: Opt(p_list), l_rate(l_rate_), moment(moment_){
+    for(auto &it : param_list){
+        m_list.emplace_front(nn::Tensor(it->data.shape, 0));
+    }
+}
+
+void Moment::step(){
+    auto p_it = param_list.begin();
+    for(auto &m_it : m_list){
+        m_it = moment * m_it + l_rate * (*p_it)->grad();
+        **p_it -= m_it;
+        ++p_it;
+    }
+}
 } // namespace opt
