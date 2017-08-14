@@ -104,8 +104,14 @@ Tensor Tensor::operator*(const Tensor& rhs) const {
     auto Y = result.data.get();
     auto Y_c = static_cast<int>(result.shape[0]);
     auto Y_r = static_cast<int>(result.shape[1]);
-    
-    if((rhs.shape[2] && rhs.shape[3]) == 1){
+
+    if( rhs.size == 1){
+        result = rhs.data[0] * *this;
+    }
+    else if( size == 1){
+        result = data[0] * rhs;
+    }
+    else if((rhs.shape[2] && rhs.shape[3]) == 1){
         if(A_r != Y_r || X_c != Y_c || A_c != X_r)
             throw invalid_argument(size_err);
         if(rhs.shape[1] == 1){
