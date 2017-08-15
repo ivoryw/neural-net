@@ -22,7 +22,7 @@ public:
 private:
     double l_rate;
 };
-
+/*
 class Moment : public Opt{
 public:
     Moment(ParStack&, double = 0.1, double = 0.9);
@@ -32,5 +32,6 @@ private:
     double l_rate, moment;
     std::forward_list<nn::Tensor> m_list;
 };
+*/
 } // namespace opt
 #endif // OPTIM_H
