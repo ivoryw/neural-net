@@ -25,11 +25,11 @@ Network net;
 opt::GD optim(net.params);
 ```	
 
-Training is performed using the `forward(x)` method, and backpropigation using `backwardProp(loss)`.
+Training is performed using the `forward(x)` method, and backpropigation using `backwardProp(l)`.
 Optimization is then performed using the `step()` method.
 ```C++
 auto output = net.forward(x);
-loss.softmax(output, targets);
-net.backwardProp(loss);
+auto l = loss::softmax(output, targets);
+net.backwardProp(l);
 opt.step();
 ```
