@@ -14,6 +14,7 @@ void GD::step(){
     }
 }
 
+/*
 Moment::Moment(ParStack& p_list, double l_rate_, double moment_)
 : Opt(p_list), l_rate(l_rate_), moment(moment_){
     for(auto &it : param_list){
@@ -29,4 +30,5 @@ void Moment::step(){
         ++p_it;
     }
 }
+*/
 } // namespace opt
