@@ -160,7 +160,8 @@ Tensor Tensor::operator/(const Tensor& rhs) const {
 }
 
 Tensor Tensor::operator*(double rhs) const {
-    Tensor result(*this);
+    Tensor result(shape);
+    result = *this;
     auto size_i = static_cast<int>(size);
     cblas_dscal(size_i, rhs, result.data.get(), 1);
     return result;
