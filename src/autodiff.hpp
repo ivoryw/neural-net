@@ -66,6 +66,11 @@ public:
     friend var conv2d(const var&, const var&, size_t, size_t);
 
     void randn(int mean=0, int var=1){ data.randn(mean, var); }
+    var asum();
+
+    nn::Tensor::iterator begin(){ return data.begin(); }
+    nn::Tensor::iterator end(){ return data.end(); }
+    size_t size(){ return data.size; }
 };
 }
 #endif //AUTOGRAD_H

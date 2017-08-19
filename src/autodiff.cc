@@ -15,7 +15,7 @@
 using std::array;
 using std::vector;
 
-enum OpType{scalar, matmul};
+enum OpType{scalar, matmul, reduct};
 
 struct Node{
     array<size_t, 2> parents;
@@ -23,15 +23,15 @@ struct Node{
     OpType type;
     
     Node(size_t, size_t, const nn::Tensor&, const nn::Tensor&, OpType);
-    Node(size_t, const nn::Tensor&);
+    Node(size_t, const nn::Tensor&, OpType=scalar);
     Node();
 };
 
 Node::Node(size_t x_index, size_t y_index, const nn::Tensor &x_val, const nn::Tensor &y_val, OpType type_)
 : parents{{x_index, y_index}}, weights{{x_val, y_val}}, type(type_){}
 
-Node::Node(size_t index , const nn::Tensor &val)
-: parents{{index, 0}}, weights{{val, nn::Tensor()}}, type(scalar){}
+Node::Node(size_t index , const nn::Tensor &val, OpType type_)
+: parents{{index, 0}}, weights{{val, nn::Tensor()}}, type(type_){}
 
 Node::Node()
 : parents{{0,0}}, weights{{nn::Tensor(), nn::Tensor()}}, type(scalar){}
@@ -53,9 +53,9 @@ struct Tape{
         nodes.emplace_back(Node(size, size, nn::Tensor(), nn::Tensor(), scalar));
         return size;
     }
-    size_t push_1(size_t x_index, const nn::Tensor &data){
+    size_t push_1(size_t x_index, const nn::Tensor &data, OpType type=scalar){
         auto size = nodes.size();
-        nodes.emplace_back(Node(x_index, data));
+        nodes.emplace_back(Node(x_index, data, type));
         return size;
     }
     size_t push_2(size_t x_index, size_t y_index, const nn::Tensor &x_val, const nn::Tensor &y_val, OpType type){
@@ -116,6 +116,9 @@ void var::evaluateLeaves()const{
             if(w2_shape == g_shape){
                 tape.grads[node.parents[1]] += gradient % node.weights[1];
             }
+        }
+        else if(node.type == reduct){
+            tape.grads[node.parents[0]] += gradient * node.weights[0];
         }
     } 
 }
@@ -250,6 +253,15 @@ var acos(const var &x){
 var atan(const var &x){
     auto new_index = tape.push_1(x.index, 1.0 / (1.0 + x.data * x.data));
     return var(atan(x.data), new_index);
+}
+
+var var::asum(){
+    auto new_index = tape.push_1(index, nn::Tensor(data.shape,1), reduct);
+    auto double_new_data = data.asum();
+    nn::Tensor new_data(1);
+    new_data(0) = double_new_data;
+    tape.push_grad(new_data.shape);
+    return var(new_data, new_index);
 }
 
 var conv1d(const var& x, const var& y){

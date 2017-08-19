@@ -28,7 +28,7 @@ namespace nn{
     Tensor conv1d(const Tensor&, const Tensor&);
     Tensor conv2d(const Tensor&, const Tensor&);
     double dot(const Tensor& lhs, const Tensor& rhs);
-    
+
     typedef std::array<size_t, 4> Shape;
     
     class Tensor{
@@ -107,6 +107,8 @@ namespace nn{
         void ones();
         void zeros();
         void constant(double);
+
+        double asum();
         
         friend Tensor sin(const Tensor& rhs);
         friend Tensor cos(const Tensor& rhs);
