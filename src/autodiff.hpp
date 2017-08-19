@@ -49,6 +49,8 @@ public:
     void operator*=(const var&);
     void operator%=(const var&);
 
+    friend var operator*(double, const var&);
+
     friend std::ostream& operator<<(std::ostream&, const var&);
     
     friend var pow(const var&, double);
@@ -67,6 +69,7 @@ public:
 
     void randn(int mean=0, int var=1){ data.randn(mean, var); }
     var asum();
+    var sum();
 
     nn::Tensor::iterator begin(){ return data.begin(); }
     nn::Tensor::iterator end(){ return data.end(); }

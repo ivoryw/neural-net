@@ -109,6 +109,7 @@ namespace nn{
         void constant(double);
 
         double asum();
+        double sum();
         
         friend Tensor sin(const Tensor& rhs);
         friend Tensor cos(const Tensor& rhs);

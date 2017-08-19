@@ -171,6 +171,13 @@ var var::operator*(const var& y)const{
     return var(new_data, new_index);
 }
 
+var operator*(double x, const var& y){
+    auto weight = nn::Tensor(y.data.shape, x);
+    auto new_data = x * y.data;
+    auto new_index = tape.push_1(y.index, weight);
+    tape.push_grad(new_data.shape);
+    return var(new_data, new_index);
+}
 
 void var::operator=(const nn::Tensor& y) { data = y;}
 
@@ -218,10 +225,10 @@ var pow(const var &x, const var &y){
 //    return var(exp_x, new_index);
 //}
 //
-//var log(const var &x){
-//    auto new_index = tape.push_1(x.index, 1/x.data);
-//    return var(log(x.data), new_index);
-//}
+var log(const var &x){
+    auto new_index = tape.push_1(x.index, 1/x.data);
+    return var(nn::log(x.data), new_index);
+}
 //
 var sin(const var &x){
     auto new_index = tape.push_1(x.index, nn::cos(x.data));
@@ -258,6 +265,14 @@ var atan(const var &x){
 var var::asum(){
     auto new_index = tape.push_1(index, nn::Tensor(data.shape,1), reduct);
     auto double_new_data = data.asum();
+    nn::Tensor new_data(1);
+    new_data(0) = double_new_data;
+    tape.push_grad(new_data.shape);
+    return var(new_data, new_index);
+}
+var var::sum(){
+    auto new_index = tape.push_1(index, nn::Tensor(data.shape,1), reduct);
+    auto double_new_data = data.sum();
     nn::Tensor new_data(1);
     new_data(0) = double_new_data;
     tape.push_grad(new_data.shape);
