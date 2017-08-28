@@ -2,6 +2,7 @@
 #define OPTIM_H
 
 #include "net.hpp"
+#include <list>
 
 namespace opt{
 typedef std::forward_list<nn::Net::Parameter*> ParStack;
@@ -22,7 +23,7 @@ public:
 private:
     double l_rate;
 };
-/*
+
 class Moment : public Opt{
 public:
     Moment(ParStack&, double = 0.1, double = 0.9);
@@ -30,8 +31,8 @@ public:
     ~Moment(){};
 private:
     double l_rate, moment;
-    std::forward_list<nn::Tensor> m_list;
+    std::list<nn::Tensor> m_list;
 };
-*/
+
 } // namespace opt
 #endif // OPTIM_H

@@ -106,8 +106,9 @@ void var::evaluateLeaves()const{
         auto &w1_shape = node.weights[0].shape;
         auto &w2_shape = node.weights[1].shape;
         if(node.type == matmul){
-            tape.grads[node.parents[0]] +=  gradient * node.weights[0].t();
+            tape.grads[node.parents[0]] += gradient * node.weights[0].t();
             tape.grads[node.parents[1]] += node.weights[1].t() * gradient;
+
         }
         else if(node.type == scalar){
             if(w1_shape == g_shape){
