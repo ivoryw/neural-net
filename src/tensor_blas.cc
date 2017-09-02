@@ -68,6 +68,21 @@ double Tensor::operator()(size_t x, size_t y, size_t z, size_t t)const{
     return data[x + y*shape[0] + z * (z_mult) + t * (t_mult)];
 }
 
+nn::Tensor Tensor::row(size_t y){
+    nn::Tensor r(shape[0]);
+    for(size_t i=0; i<shape[0]; ++i){
+        r(i) = data[y * shape[1] + i];
+    }
+    return r;
+}
+
+nn::Tensor Tensor::col(size_t x){
+    nn::Tensor c(1, shape[1]);
+    for(size_t i=0; i<shape[1]; ++i){
+        c(0,i) = data[i * shape[0] + x];
+    }
+    return c;
+}
 
 void Tensor::operator=(const Tensor& rhs) {
     if(shape != rhs.shape) throw invalid_argument(size_err);

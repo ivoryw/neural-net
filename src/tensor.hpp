@@ -76,6 +76,10 @@ namespace nn{
         double &operator()(size_t x, size_t y=0, size_t z=0, size_t t=0);
         double operator()(size_t x, size_t y=0, size_t z=0, size_t t=0) const;
         
+        nn::Tensor row(size_t);
+        nn::Tensor col(size_t);
+        nn::Tensor slice(size_t);
+        
         void operator=(const Tensor&);
         Tensor operator+(const Tensor&)const;
         Tensor operator-(const Tensor&)const;
@@ -107,6 +111,7 @@ namespace nn{
         void ones();
         void zeros();
         void constant(double);
+
 
         double asum();
         double sum();
