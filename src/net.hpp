@@ -4,19 +4,20 @@
 #include <forward_list>
 
 namespace nn{
+using autodiff::Var;
+
 class Net{
     public:
-    void backward(const autodiff::Var &loss);
-    class Parameter : public autodiff::Var{
-    public:
-        Parameter(Net* net, const Tensor& data) 
-        : autodiff::Var(data){ net->param_list.push_front(this); }
-        Parameter(Net* net ,size_t x, size_t y=1, size_t z=1, size_t t=1)
-        : autodiff::Var(x,y,z,t){ net->param_list.push_front(this); }
-    };
-    std::forward_list<Parameter*>& params() {return param_list;}
+    void backward(const Var &loss);
+
+    Var& create_parameter(const Tensor& data) {
+        parameters.push_front(Parameter(data));
+        return &parameters[0];
+    }
+
+    std::forward_list<Var>& params() { return parameters; }
     protected:
-    std::forward_list<Parameter*> param_list;
+    std::forward_list<Var> parameters;
 };
 } // namespace nn
 #endif // NET_H
