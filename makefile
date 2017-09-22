@@ -21,8 +21,8 @@ all: net
 net: obj/main.o
 	$(CXX) $^ -o $@ $(LFLAGS) 
 
-PHONY: .test
-test: obj/test.o $(OBJS)
+PHONY: .example
+example: obj/example.o $(OBJS)
 	$(CXX) $^ -o $@ $(LFLAGS)
 
 obj/%.o: src/%.cc
