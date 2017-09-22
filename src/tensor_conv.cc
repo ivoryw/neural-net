@@ -45,7 +45,7 @@ void fft_c2r_2d(size_t width, size_t height, xdouble* in_ptr, double* out_ptr){
     fftw_destroy_plan(plan);
 }
 
-Tensor conv1d(const Tensor& input, const Tensor& weight){
+Tensor conv_1d(const Tensor& input, const Tensor& weight){
     auto len = input.shape[1];
     auto x_out = std::make_unique<xdouble[]>(len);
     auto w_out = std::make_unique<xdouble[]>(len);

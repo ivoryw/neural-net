@@ -4,12 +4,12 @@
 #include "net.hpp"
 
 namespace nn{
-    class fc{
+    class FullyConnected{
     private:
         Net::Parameter weight, bias;
     public:
-        fc(size_t, size_t, Net*);
-        autodiff::var operator()(const autodiff::var&);
+        FullyConnected(size_t, size_t, Net*);
+        autodiff::Var operator()(const autodiff::Var&);
     };
 
    class Conv1d{
@@ -18,7 +18,7 @@ namespace nn{
        const size_t out_channels, kernel, padding, stride;
    public:
        Conv1d(Net*, size_t, size_t, size_t, size_t=0, size_t=1);
-       autodiff::var operator()(const autodiff::var&);
+       autodiff::Var operator()(const autodiff::Var&);
    };
 
    class Conv2d{
@@ -27,7 +27,7 @@ namespace nn{
        const size_t out_channels, kernel, padding, stride;
    public:
        Conv2d(Net*, size_t, size_t, size_t, size_t=0, size_t=1);
-       autodiff::var operator()(const autodiff::var&);
+       autodiff::Var operator()(const autodiff::Var&);
    };
 
 } // namespace nn

@@ -2,19 +2,19 @@
 #include <iostream>
 
 namespace loss{
-autodiff::var mean(autodiff::var& input, autodiff::var& target){
-    auto loss = (input - target).asum();
-    auto l_size = autodiff::var(nn::Tensor(loss.data.shape, input.size()));
+autodiff::Var mean_error(autodiff::Var& input, autodiff::Var& target){
+    auto loss = (input - target).abs_sum();
+    auto l_size = autodiff::Var(nn::Tensor(loss.data.shape, input.size()));
     loss /= l_size;
     return loss;
 }
-autodiff::var mse(autodiff::var& input, autodiff::var& target){
-    auto loss = (pow(input - target, 2)).asum();
-    auto l_size = autodiff::var(nn::Tensor(loss.data.shape, input.size()));
+autodiff::Var mean_squared_error(autodiff::Var& input, autodiff::Var& target){
+    auto loss = (pow(input - target, 2)).abs_sum();
+    auto l_size = autodiff::Var(nn::Tensor(loss.data.shape, input.size()));
     loss /= l_size;
     return loss;
 }
-autodiff::var crossEntropy(autodiff::var& input, autodiff::var& target){
+autodiff::Var cross_entropy_loss(autodiff::Var& input, autodiff::Var& target){
     auto loss = -1 * (input * log(target)).sum();
     return loss;
 }

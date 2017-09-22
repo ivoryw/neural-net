@@ -1,8 +1,8 @@
 #include "autodiff.hpp"
 
 namespace loss{
-autodiff::var mean(autodiff::var&, autodiff::var&);
-autodiff::var mse(autodiff::var&, autodiff::var&);
-autodiff::var crossEntropy(autodiff::var&, autodiff::var&);
+autodiff::Var mean_error(autodiff::Var&, autodiff::Var&);
+autodiff::Var mean_squared_error(autodiff::Var&, autodiff::Var&);
+autodiff::Var cross_entropy_loss(autodiff::Var&, autodiff::Var&);
 } // namepsace loss
 

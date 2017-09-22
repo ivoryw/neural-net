@@ -1,38 +1,37 @@
 #include "autodiff.hpp"
 #include "net.hpp"
 #include "layers.hpp"
+#include "optim.hpp"
+#include "loss.hpp"
 
 #include <iostream>
 
 class Model : public nn::Net{
     public:
-    Model() : nn::Net(), fc1(10, 5, this), fc2(5,1,this){ }
+    Model() : nn::Net(), fc1(10, 1, this){ }
 
-    nn::fc fc1, fc2;
-    autodiff::var forward(autodiff::var& x) {
+    nn::FullyConnected fc1;
+    autodiff::Var forward(autodiff::Var& x) {
         auto y = fc1(x);
-        auto z = fc2(y);
-        return z;
+        return y;
     }
 };
 
 int main(){
     nn::Tensor a(1,10);
-    a.randn();
-    autodiff::var var_a(a);
+    nn::Tensor z(1);
+    a.rand(0,1);
+    z.rand(0,1);
+    std::cout << a.row(0);
+    std::cout << a.col(0);
+    autodiff::Var var_a(a);
+    autodiff::Var var_z(z);
 
-    auto model = Model();
+    Model model;
+    auto opt = opt::GD(model.params());
     auto y = model.forward(var_a);
-    model.backwardProp(y);
-    model.update();
-    y = model.forward(var_a);
-    std::cout << var_a;
-    
-    nn::Tensor b(1,10);
-    b.randn();
-    auto d = autodiff::var(b);
-    auto c = autodiff::conv1d(d,var_a);
-    c.evaluateLeaves();
-    std::cout << c;
-    std::cout << d;
+    auto l = loss::cross_entropy_loss(y, var_z);
+    model.backward(y);
+    opt.step();
+    std::cout << l;
 }

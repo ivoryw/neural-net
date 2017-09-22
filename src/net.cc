@@ -1,7 +1,7 @@
 #include "net.hpp"
 
 namespace nn{
-void Net::backwardProp(const autodiff::var& loss){
-    loss.evaluateLeaves();
+void Net::backward(const autodiff::Var& loss){
+    loss.evaluate_leaves();
 }
 } // namespace nn

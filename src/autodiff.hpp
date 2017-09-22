@@ -5,74 +5,73 @@
 
 namespace autodiff{
     
-    class var;
+    class Var;
     
-    var pow(const var&, double);
-    var pow(const var&, const var&);
-    var sqrt(const var&);
-    var exp(const var&);
-    var log(const var&);
-    var sin(const var&);
-    var cos(const var&);
-    var tan(const var&);
-    var asin(const var&);
-    var acos(const var&);
-    var atan(const var&);
-    var conv1d(const var&, const var&);
-    var conv2d(const var&, const var&, size_t, size_t);
+    Var pow(const Var&, double);
+    Var pow(const Var&, const Var&);
+    Var sqrt(const Var&);
+    Var exp(const Var&);
+    Var log(const Var&);
+    Var sin(const Var&);
+    Var cos(const Var&);
+    Var tan(const Var&);
+    Var asin(const Var&);
+    Var acos(const Var&);
+    Var atan(const Var&);
+    Var conv_1d(const Var&, const Var&);
+    Var conv_2d(const Var&, const Var&, size_t, size_t);
     
-class var{
-private:
+class Var{
     size_t index;
 
 public:
     nn::Tensor data;
-    var(const nn::Tensor&);
-    var(const nn::Tensor&, size_t);
-    var(size_t, size_t=1, size_t=1, size_t=1);
+    Var(const nn::Tensor&);
+    Var(const nn::Tensor&, size_t);
+    Var(size_t, size_t=1, size_t=1, size_t=1);
     
-    void evaluateLeaves() const;
+    void evaluate_leaves() const;
     nn::Tensor grad()const;
 
     double& operator()(size_t,size_t=1,size_t=1,size_t=1);
 
-    var operator+(const var&)const;
-    var operator-(const var&)const;
-    var operator*(const var&)const;
-    var operator%(const var&)const;
-    var operator/(const var&)const;
+    Var operator+(const Var&)const;
+    Var operator-(const Var&)const;
+    Var operator*(const Var&)const;
+    Var operator%(const Var&)const;
+    Var operator/(const Var&)const;
 
     void operator=(const nn::Tensor&);
-    void operator+=(const var&);
-    void operator-=(const var&);
-    void operator/=(const var&);
-    void operator*=(const var&);
-    void operator%=(const var&);
+    void operator+=(const Var&);
+    void operator-=(const Var&);
+    void operator/=(const Var&);
+    void operator*=(const Var&);
+    void operator%=(const Var&);
 
-    friend var operator*(double, const var&);
+    friend Var operator*(double, const Var&);
 
-    friend std::ostream& operator<<(std::ostream&, const var&);
+    friend std::ostream& operator<<(std::ostream&, const Var&);
     
-    friend var pow(const var&, double);
-    friend var pow(const var&, const var&);
-    friend var sqrt(const var&);
-    friend var exp(const var&);
-    friend var log(const var&);
-    friend var sin(const var&);
-    friend var cos(const var&);
-    friend var tan(const var&);
-    friend var asin(const var&);
-    friend var acos(const var&);
-    friend var atan(const var&);
-    friend var conv1d(const var&, const var&);
-    friend var conv2d(const var&, const var&, size_t, size_t);
+    friend Var pow(const Var&, double);
+    friend Var pow(const Var&, const Var&);
+    friend Var sqrt(const Var&);
+    friend Var exp(const Var&);
+    friend Var log(const Var&);
+    friend Var sin(const Var&);
+    friend Var cos(const Var&);
+    friend Var tan(const Var&);
+    friend Var asin(const Var&);
+    friend Var acos(const Var&);
+    friend Var atan(const Var&);
+    friend Var conv_1d(const Var&, const Var&);
+    friend Var conv_2d(const Var&, const Var&, size_t, size_t);
 
     void randn(int mean=0, int var=1){ data.randn(mean, var); }
-    var asum();
-    var sum();
+    Var abs_sum();
+    Var sum();
 
-    nn::Tensor::iterator begin(){ return data.begin(); }
-    nn::Tensor::iterator end(){ return data.end(); }
+    nn::Tensor::Iterator begin(){ return data.begin(); }
+    nn::Tensor::Iterator end(){ return data.end(); }
     size_t size(){ return data.size; }
 };
 }

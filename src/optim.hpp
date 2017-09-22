@@ -5,19 +5,19 @@
 #include <list>
 
 namespace opt{
-typedef std::forward_list<nn::Net::Parameter*> ParStack;
+typedef std::forward_list<nn::Net::Parameter*> ParameterList;
 class Opt{
 public:
-    Opt(ParStack&);
+    Opt(ParameterList&);
     virtual void step(){}
     virtual ~Opt(){}
 protected:
-    ParStack param_list;
+    ParameterList parameters;
 };
 
 class GD: public Opt{
 public:
-    GD(ParStack&, double = 0.1);
+    GD(ParameterList&, double = 0.1);
     void step();    
     ~GD(){};
 private:
@@ -26,7 +26,7 @@ private:
 
 class Moment : public Opt{
 public:
-    Moment(ParStack&, double = 0.1, double = 0.9);
+    Moment(ParameterList&, double = 0.1, double = 0.9);
     void step();
     ~Moment(){};
 private:

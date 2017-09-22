@@ -5,13 +5,13 @@
 namespace nn{
 static std::string dim_err ="Input tensors to fully connected layers must be 1D tensors";
 
-fc::fc(size_t in_size, size_t out_size, Net* net)
+FullyConnected::FullyConnected(size_t in_size, size_t out_size, Net* net)
 : weight(net, in_size, out_size), bias(net, 1, out_size){
     weight.randn();
     bias.randn();
 }
     
-autodiff::var fc::operator()(const autodiff::var& input){
+autodiff::Var FullyConnected::operator()(const autodiff::Var& input){
     auto result = weight * input;
     result += bias;
     return result;
@@ -24,10 +24,10 @@ Conv1d::Conv1d(Net* net, size_t c_in, size_t c_out, size_t kernel, size_t paddin
     bias.randn();
 }
 
-autodiff::var Conv1d::operator()(const autodiff::var& input){
+autodiff::Var Conv1d::operator()(const autodiff::Var& input){
     auto r_len = floor((input.data.shape[1] + 2*padding - (kernel - 1) -1)/stride+1);
-    autodiff::var result(out_channels, r_len);
-    result += conv1d(input, weight);
+    autodiff::Var result(out_channels, r_len);
+    result += conv_1d(input, weight);
     result += bias;
     return result;
 }

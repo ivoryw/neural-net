@@ -25,7 +25,7 @@ namespace nn{
     Tensor pow(const Tensor&, const Tensor&);
     Tensor log(const Tensor&);
     Tensor sqrt(const Tensor&);
-    Tensor conv1d(const Tensor&, const Tensor&);
+    Tensor conv_1d(const Tensor&, const Tensor&);
     Tensor conv2d(const Tensor&, const Tensor&);
     double dot(const Tensor& lhs, const Tensor& rhs);
 
@@ -45,20 +45,20 @@ namespace nn{
         Shape shape;
         
         // Random access iterator to internal data pointer
-        class iterator
+        class Iterator
         : public std::iterator<std::random_access_iterator_tag, double>{
             double* data_ptr;
         public:
-            iterator(double* data_ptr_) : data_ptr(data_ptr_){}
-            iterator& operator++(){ ++data_ptr; return *this; }
-            iterator operator++(int){ iterator tmp(*this); operator++(); return tmp; }
-            bool operator==(const iterator& rhs){ return data_ptr == rhs.data_ptr; }
-            bool operator!=(const iterator& rhs){ return data_ptr != rhs.data_ptr; }
+            Iterator(double* data_ptr_) : data_ptr(data_ptr_){}
+            Iterator& operator++(){ ++data_ptr; return *this; }
+            Iterator operator++(int){ Iterator tmp(*this); operator++(); return tmp; }
+            bool operator==(const Iterator& rhs){ return data_ptr == rhs.data_ptr; }
+            bool operator!=(const Iterator& rhs){ return data_ptr != rhs.data_ptr; }
             double& operator*(){ return *data_ptr; }
         };
         
-        iterator begin() const { return iterator(data.get()); }
-        iterator end() const { return iterator(data.get()+size); }
+        Iterator begin() const { return Iterator(data.get()); }
+        Iterator end() const { return Iterator(data.get()+size); }
         
         /************************************************************
          Operators
@@ -113,7 +113,7 @@ namespace nn{
         void constant(double);
 
 
-        double asum();
+        double abs_sum();
         double sum();
         
         friend Tensor sin(const Tensor& rhs);
@@ -126,7 +126,7 @@ namespace nn{
         friend Tensor pow(const Tensor&, const Tensor&);
         friend Tensor log(const Tensor&);
         friend Tensor sqrt(const Tensor&);
-        friend Tensor conv1d(const Tensor&, const Tensor&);
+        friend Tensor conv_1d(const Tensor&, const Tensor&);
         friend Tensor conv2d(const Tensor&, const Tensor&);
     };
 } // namespace nn
