@@ -71,7 +71,7 @@ double Tensor::operator()(size_t x, size_t y, size_t z, size_t t)const {
 nn::Tensor Tensor::row(size_t y) {
     nn::Tensor r(shape[0]);
     for(size_t i = 0; i < shape[0]; ++i) {
-        r(i) = data[y * shape[1] + i];
+        r(i) = data[i + shape[1] * y];
     }
     return r;
 }
@@ -79,9 +79,19 @@ nn::Tensor Tensor::row(size_t y) {
 nn::Tensor Tensor::col(size_t x) {
     nn::Tensor c(1, shape[1]);
     for(size_t i = 0; i < shape[1]; ++i) {
-        c(0,i) = data[i * shape[0] + x];
+        c(0, i) = data[shape[0] * x + i];
     }
     return c;
+}
+
+nn::Tensor Tensor::slice(size_t z) {
+    nn::Tensor s(shape[0], shape[1]);
+    for(size_t i = 0; i < shape[0]; ++i) {
+        for(size_t j = 0; j < shape[1]; ++j) {
+            s(i, j) = data[i + j * shape[0] + z * (shape[0] * shape[1])];
+        }
+    }
+    return s;
 }
 
 void Tensor::operator=(const Tensor& rhs) {
