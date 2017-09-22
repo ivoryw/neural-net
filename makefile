@@ -15,7 +15,7 @@ endif
 CXXFLAGS += -Wall -Wextra -Wshadow -Wnon-virtual-dtor -Wpedantic -g 
 CPPFLAGS += -std=c++14
 OBJS =  obj/tensor_calc.o obj/tensor_conv.o obj/tensor_ops.o obj/autodiff.o \
-                obj/net.o obj/optim.o obj/layers.o obj/loss.o obj/tensor_red.o obj/tensor_core.o
+                obj/net.o obj/optim.o obj/layers.o obj/loss.o obj/tensor_reduce.o obj/tensor_core.o
 
 all: net
 net: obj/main.o
