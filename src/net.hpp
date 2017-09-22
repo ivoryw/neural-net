@@ -6,15 +6,13 @@
 namespace nn{
 using autodiff::Var;
 
-class Net{
+class Net{    
     public:
     void backward(const Var &loss);
-
     Var& create_parameter(const Tensor& data) {
-        parameters.push_front(Parameter(data));
-        return &parameters[0];
+        parameters.push_front(Var(data));
+        return parameters.front();
     }
-
     std::forward_list<Var>& params() { return parameters; }
     protected:
     std::forward_list<Var> parameters;

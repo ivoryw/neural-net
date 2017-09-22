@@ -5,14 +5,17 @@
 #include <list>
 
 namespace opt{
-typedef std::forward_list<nn::Net::Parameter*> ParameterList;
+
+using autodiff::Var;
+typedef std::forward_list<Var> ParameterList;
+
 class Opt{
 public:
     Opt(ParameterList&);
     virtual void step(){}
     virtual ~Opt(){}
 protected:
-    ParameterList parameters;
+    ParameterList& parameters;
 };
 
 class GD: public Opt{
@@ -28,7 +31,7 @@ class Moment : public Opt{
 public:
     Moment(ParameterList&, double = 0.1, double = 0.9);
     void step();
-    ~Moment(){};
+    ~Moment(){}
 private:
     double l_rate, moment;
     std::list<nn::Tensor> m_list;
