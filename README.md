@@ -1,5 +1,6 @@
 # nn
-A framework for building neural network graphs
+A Torch-like C++ framework for building neural network graphs.
+Runs on an automatic differentiation tensor library built on top of vecLib (with plans to move to a more cross plaform framework). A small collection of prebuilt layers, loss functions and optimisers are avaiable.
 
 ## Usage
 Design the neural network object you want to use from the `nn::Net` base object.
