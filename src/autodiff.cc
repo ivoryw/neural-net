@@ -130,6 +130,10 @@ double& Var::operator()(size_t x, size_t y, size_t z, size_t t){
     return data(x,y,z,t);
 }
 
+double Var::operator()(size_t x, size_t y, size_t z, size_t t) const {
+    return data(x,y,z,t);
+}
+
 Var Var::operator+(const Var& y)const{
     auto new_data = data + y.data;
     auto x_weight = nn::Tensor(data.shape, 1);

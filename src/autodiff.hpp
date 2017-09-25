@@ -33,7 +33,8 @@ public:
     void evaluate_leaves() const;
     nn::Tensor grad()const;
 
-    double& operator()(size_t,size_t=1,size_t=1,size_t=1);
+    double& operator()(size_t, size_t=0, size_t=0, size_t=0);
+    double operator()(size_t, size_t=0, size_t=0, size_t=0) const;
 
     Var operator+(const Var&)const;
     Var operator-(const Var&)const;
