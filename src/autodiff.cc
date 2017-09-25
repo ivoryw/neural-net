@@ -1,10 +1,7 @@
-/***************************************************
- AutoGrad
- A small library for handling automatic differentiation using a tape
- method. Operator overloads and overloads for standard cmath functions
- are provided so that variables van be used normally until the gradient
- needs to be evaluated.
- ***************************************************/
+/**
+    AutoDiff
+    A module for handling automatic differentiation.
+ */
 
 #include "autodiff.hpp"
 
@@ -14,57 +11,68 @@
 
 using std::array;
 using std::vector;
+using nn::Tensor;
 
 enum OpType{scalar, matmul, reduct};
 
+/**
+    WegnerntNode
+    A node holding weights for variable parents
+*/
 struct WegnerntNode{
     array<size_t, 2> parents;
-    array<nn::Tensor, 2> weights;
+    array<Tensor, 2> weights;
     OpType type;
     
-    WegnerntNode(size_t, size_t, const nn::Tensor&, const nn::Tensor&, OpType);
-    WegnerntNode(size_t, const nn::Tensor&, OpType=scalar);
+    WegnerntNode(size_t, size_t, const Tensor&, const Tensor&, OpType);
+    WegnerntNode(size_t, const Tensor&, OpType=scalar);
     WegnerntNode();
 };
 
-WegnerntNode::WegnerntNode(size_t x_index, size_t y_index, const nn::Tensor &x_val, const nn::Tensor &y_val, OpType type_)
-: parents{{x_index, y_index}}, weights{{x_val, y_val}}, type(type_){}
+//  Two parent variable initialiser 
+WegnerntNode::WegnerntNode(size_t x_index, size_t y_index, const Tensor &x_weight, const Tensor &y_weight, OpType type_)
+: parents{{x_index, y_index}}, weights{{x_weight, y_weight}}, type(type_){}
 
-WegnerntNode::WegnerntNode(size_t index , const nn::Tensor &val, OpType type_)
-: parents{{index, 0}}, weights{{val, nn::Tensor()}}, type(type_){}
+// One parent variable initialiser
+WegnerntNode::WegnerntNode(size_t index , const Tensor &weight, OpType type_)
+: parents{{index, 0}}, weights{{weight, Tensor()}}, type(type_){}
 
+// Zero parent variable intialiser
 WegnerntNode::WegnerntNode()
-: parents{{0,0}}, weights{{nn::Tensor(), nn::Tensor()}}, type(scalar){}
+: parents{{0,0}}, weights{{Tensor(), Tensor()}}, type(scalar){}
 
-/**************************************************
- Wengernt List
- A ticker tape which holds the nodes for each operation on an autodiff::var.
- Currently contains the vector for the gradient wrt to the last last node
- on each tree.
- Takes binary, unary and nullary operations.
- ***************************************************/
-
+/**
+    WengerntList
+    A ticker tape which holds the nodes for each operation on a Variable
+*/
 struct WengerntList{
     vector<WegnerntNode> nodes;
-    vector<nn::Tensor> grads;
-    
+    vector<Tensor> grads;
+
+    // Appends a zero parent variable to the tape
     size_t push_0(){
         auto size = nodes.size();
-        nodes.emplace_back(WegnerntNode(size, size, nn::Tensor(), nn::Tensor(), scalar));
+        nodes.emplace_back(WegnerntNode(size, size, Tensor(), Tensor(), scalar));
         return size;
     }
-    size_t push_1(size_t x_index, const nn::Tensor &data, OpType type=scalar){
+
+    // Appends a one parent variable to the tape
+    size_t push_1(size_t x_index, const Tensor &weight, OpType type=scalar){
         auto size = nodes.size();
-        nodes.emplace_back(WegnerntNode(x_index, data, type));
+        nodes.emplace_back(WegnerntNode(x_index, weight, type));
         return size;
     }
-    size_t push_2(size_t x_index, size_t y_index, const nn::Tensor &x_val, const nn::Tensor &y_val, OpType type){
+
+    // Appends a two parent variable to the tape
+    size_t push_2(size_t x_index, size_t y_index, const Tensor &x_weight, const Tensor &y_weight, OpType type){
         auto size = nodes.size();
-        nodes.emplace_back(WegnerntNode(x_index, y_index, x_val, y_val, type));
+        nodes.emplace_back(WegnerntNode(x_index, y_index, x_weight, y_weight, type));
         return size;
     }
+
+    // Adds a gradient to the gradient tape
     void push_grad(const nn::Shape& shape){
-        grads.emplace_back(nn::Tensor(shape,0));
+        grads.emplace_back(Tensor(shape,0));
     }
     
     size_t size(){ return nodes.size(); }
@@ -75,28 +83,22 @@ struct WengerntList{
 
 static WengerntList tape;
 
-/***************************************************
- var
- Every operation is pushed back onto the ticker tape.
- Holds its own index on the tape along with a reference to the tape.
- ***************************************************/
 namespace autodiff{
 
-// Constructor for intializing variable with a tape entry
-Var::Var(const nn::Tensor& data_, size_t index_) :index(index_), data(data_){}
+Var::Var(const Tensor& data_, size_t index_) :index(index_), data(data_){}
 
-// Constructor for intializing a variable without a tape entry
-Var::Var(const nn::Tensor& data_) : data(data_){
+Var::Var(const Tensor& data_) : data(data_){
     index = tape.push_0(); 
     tape.push_grad(data.shape);
 }
 
 Var::Var(size_t x, size_t y, size_t z, size_t t)
-: data(nn::Tensor(x,y,z,t)){
+: data(Tensor(x,y,z,t)){
     index = tape.push_0();
     tape.push_grad(data.shape);
 }
 
+// Backpropagates using the chain rule along the leaf nodes
 void Var::evaluate_leaves()const{
     tape.grads[index].ones();
     for(size_t i=index+1; i-- >0;){
@@ -105,6 +107,7 @@ void Var::evaluate_leaves()const{
         auto &g_shape = gradient.shape;
         auto &w1_shape = node.weights[0].shape;
         auto &w2_shape = node.weights[1].shape;
+        // Splits due to different multiplication methods
         if(node.type == matmul){
             tape.grads[node.parents[0]] += gradient * node.weights[0].t();
             tape.grads[node.parents[1]] += node.weights[1].t() * gradient;
@@ -124,28 +127,48 @@ void Var::evaluate_leaves()const{
     } 
 }
 
-nn::Tensor Var::grad()const{ return tape.grads[index]; }
+Tensor Var::grad()const{ return tape.grads[index]; }
 
+// Access operators
 double& Var::operator()(size_t x, size_t y, size_t z, size_t t){
     return data(x,y,z,t);
 }
 
+double Var::operator()(size_t x, size_t y, size_t z, size_t t) const {
+    return data(x,y,z,t);
+}
+
+std::ostream& operator<<(std::ostream& os, const Var& rhs){
+    os << "Tensor:" << std::endl;
+    os << rhs.data;
+    os << "Gradient:" << std::endl;
+    os << tape.grads[rhs.index];
+    os << std::endl;
+    return os;
+}
+
+// Differentiation works by assigning weights to the parent variables,
+// these weights are evaluated using standard differentiation methods
+// A new node is created on the tape with these weights and links to the
+// parent variables
 Var Var::operator+(const Var& y)const{
     auto new_data = data + y.data;
-    auto x_weight = nn::Tensor(data.shape, 1);
-    auto y_weight = nn::Tensor(data.shape, 1);
+    auto x_weight = Tensor(data.shape, 1);
+    auto y_weight = Tensor(data.shape, 1);
     auto new_index = tape.push_2(index, y.index, x_weight, y_weight, scalar);
     tape.push_grad(new_data.shape);
     return Var(new_data, new_index);
 }
+
 Var Var::operator-(const Var& y)const{
     auto new_data = data - y.data;
-    auto x_weight = nn::Tensor(data.shape, 1);
-    auto y_weight = nn::Tensor(data.shape, -1);
+    auto x_weight = Tensor(data.shape, 1);
+    auto y_weight = Tensor(data.shape, -1);
     auto new_index = tape.push_2(index, y.index, x_weight, y_weight, scalar);
     tape.push_grad(new_data.shape);
     return Var(new_data, new_index);
 }
+
 Var Var::operator%(const Var& y)const{
     auto new_data = data % y.data;
     auto x_weight = y.data; 
@@ -154,6 +177,7 @@ Var Var::operator%(const Var& y)const{
     tape.push_grad(new_data.shape);
     return Var(new_data, new_index);
 }
+
 Var Var::operator/(const Var& y)const{
     auto x_weight = 1.0 / y.data;
     auto y_weight = 2.0 * data / (y.data % y.data);
@@ -173,34 +197,20 @@ Var Var::operator*(const Var& y)const{
 }
 
 Var operator*(double x, const Var& y){
-    auto weight = nn::Tensor(y.data.shape, x);
+    auto weight = Tensor(y.data.shape, x);
     auto new_data = x * y.data;
     auto new_index = tape.push_1(y.index, weight);
     tape.push_grad(new_data.shape);
     return Var(new_data, new_index);
 }
 
-void Var::operator=(const nn::Tensor& y) { data = y; }
+void Var::operator=(const Tensor& y) { data = y; }
 
 void Var::operator+=(const Var& y){ *this = *this + y;}
 void Var::operator-=(const Var& y){ *this = *this - y;}
 void Var::operator/=(const Var& y){ *this = *this / y; }
 void Var::operator*=(const Var& y){ *this = *this * y; }
 void Var::operator%=(const Var& y){ *this = *this % y; }
-
-std::ostream& operator<<(std::ostream& os, const Var& rhs){
-    os << "Tensor:" << std::endl;
-    os << rhs.data;
-    os << "Gradient:" << std::endl;
-    os << tape.grads[rhs.index];
-    os << std::endl;
-    return os;
-}
-/***************************************************
-cmath arithmetics
-Reimplimentation of primitive cmath operations to include
-differentiation process.
-***************************************************/
 
 Var pow(const Var &x, double y){
     auto x_weight = y * nn::pow(x.data, y - 1);
@@ -265,17 +275,17 @@ Var atan(const Var &x){
 }
 
 Var Var::abs_sum(){
-    auto new_index = tape.push_1(index, nn::Tensor(data.shape, 1), reduct);
+    auto new_index = tape.push_1(index, Tensor(data.shape, 1), reduct);
     auto double_new_data = data.abs_sum();
-    nn::Tensor new_data(1);
+    Tensor new_data(1);
     new_data(0) = double_new_data;
     tape.push_grad(new_data.shape);
     return Var(new_data, new_index);
 }
 Var Var::sum(){
-    auto new_index = tape.push_1(index, nn::Tensor(data.shape, 1), reduct);
+    auto new_index = tape.push_1(index, Tensor(data.shape, 1), reduct);
     auto double_new_data = data.sum();
-    nn::Tensor new_data(1);
+    Tensor new_data(1);
     new_data(0) = double_new_data;
     tape.push_grad(new_data.shape);
     return Var(new_data, new_index);
@@ -283,8 +293,8 @@ Var Var::sum(){
 
 Var conv_1d(const Var& x, const Var& y){
     auto new_data = nn::conv_1d(x.data, y.data);
-    auto x_weight = nn::conv_1d(nn::Tensor(x.data.shape, 1), y.data);
-    auto y_weight = nn::conv_1d(x.data, nn::Tensor(y.data.shape, 1));
+    auto x_weight = nn::conv_1d(Tensor(x.data.shape, 1), y.data);
+    auto y_weight = nn::conv_1d(x.data, Tensor(y.data.shape, 1));
     auto new_index = tape.push_2(x.index, y.index, x_weight, y_weight, scalar);
     tape.push_grad(new_data.shape);
     return Var(new_data, new_index);
