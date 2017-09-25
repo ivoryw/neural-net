@@ -26,6 +26,7 @@ example: obj/example.o $(OBJS)
 	$(CXX) $^ -o $@ $(LFLAGS)
 
 obj/%.o: src/%.cc
+	@mkdir -p obj
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
 PHONY: .clean
