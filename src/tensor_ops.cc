@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <random>
 #include <iostream>
+#include <cstring>
 
 #ifdef __APPLE__
 #include <Accelerate/Accelerate.h>
@@ -47,6 +48,8 @@ Tensor Tensor::operator-(const Tensor& rhs)const {
 // Tensor multiplication is messier due to the decision tree for BLAS funcs so
 // isn't inlined like the rest
 Tensor Tensor::operator*(const Tensor& rhs) const {
+    if(shape[0] != rhs.shape[1]) throw invalid_argument(size_err);
+
     Tensor result(rhs.shape[0], shape[1]);
     auto A = data.get();
     auto A_c = static_cast<int>(shape[0]);
@@ -56,36 +59,15 @@ Tensor Tensor::operator*(const Tensor& rhs) const {
     auto X_r = static_cast<int>(rhs.shape[1]);
     auto Y = result.data.get();
     auto Y_c = static_cast<int>(result.shape[0]);
-    auto Y_r = static_cast<int>(result.shape[1]);
 
-    if( rhs.size == 1) {
-        return rhs.data[0] * *this;
+    if(shape[0] == 1) {
+        cblas_dgemv(CblasRowMajor, CblasNoTrans, A_r, A_c, 1, A, A_c, X, 1, 1, Y, 1);
     }
-    else if( size == 1) {
-        return data[0] * rhs;
+    else if(rhs.shape[0] == 1) {
+        cblas_dgemv(CblasRowMajor, CblasNoTrans, X_r, X_c, 1, X, A_c, A, 1, 1, Y, 1);
     }
-    else if((rhs.shape[2] && rhs.shape[3]) == 1) {
-        if(A_r != Y_r || X_c != Y_c || A_c != X_r) {
-            throw invalid_argument(size_err);
-        }
-        if(rhs.shape[1] == 1) {
-            cblas_dgemv(CblasRowMajor, CblasNoTrans, A_r, A_c, 1, A, A_c, X, 1, 1, Y, 1);
-        }
-        else {
-            cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, A_r, X_c, A_c, 1, A, A_c, X, X_c, 1, Y, Y_c);
-        }
-    }
-    else if(rhs.shape[3] == 1) {
-        for(size_t i = 0; i < shape[2]; ++i) {
-            auto slice_ptr = A + (shape[2] * i);
-            auto rhs_ptr = X + (shape[2] * i);
-            auto result_ptr = Y+(shape[2]*i);
-            cblas_dgemm(CblasRowMajor, CblasNoTrans,CblasNoTrans,
-                        A_c, X_c, A_c,
-                        1, slice_ptr, A_c,
-                        rhs_ptr, X_c, 1,
-                        result_ptr, Y_c);
-        }
+    else {
+        cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, A_r, X_c, A_c, 1, A, A_c, X, X_c, 1, Y, Y_c);
     }
     return result;
 }
@@ -111,6 +93,15 @@ Tensor Tensor::operator/(const Tensor& rhs) const {
     }
 #endif
     return result;
+}
+
+bool Tensor::operator==(const Tensor& rhs) {
+    if(rhs.shape != shape)
+        return false;
+    else if(memcmp(data.get(), rhs.data.get(), size) != 0)
+        return false;
+    else
+        return true;
 }
 
 Tensor Tensor::operator*(double rhs) const {

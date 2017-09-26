@@ -59,26 +59,26 @@ struct WengerntList{
     }
 
     // Appends a two parent variable to the tape
-    size_t push_2(size_t x_index, size_t y_index, const Tensor &x_weight, const Tensor &y_weight, OpType type){
+    size_t push_2(size_t x_index, size_t y_index, const Tensor &x_weight, const Tensor &y_weight, OpType type) {
         auto size = nodes.size();
         nodes.emplace_back(WegnerntNode(x_index, y_index, x_weight, y_weight, type));
         return size;
     }
 
     // Adds a gradient to the gradient tape
-    void push_grad(const nn::Shape& shape){
+    void push_grad(const nn::Shape& shape) {
         grads.emplace_back(Tensor(shape,0));
     }
     
-    size_t size(){ return nodes.size(); }
+    size_t size() { return nodes.size(); }
 
-    auto begin(){ return nodes.begin(); }
+    auto begin() { return nodes.begin(); }
     auto end(){ return nodes.end(); }
 };
 
 static WengerntList tape;
 
-namespace autodiff{
+namespace autodiff {
 
 Var::Var(const Tensor& data_, size_t index_) :index(index_), data(data_){}
 
@@ -87,14 +87,13 @@ Var::Var(const Tensor& data_) : data(data_){
     tape.push_grad(data.shape);
 }
 
-Var::Var(size_t x, size_t y, size_t z, size_t t)
-: data(Tensor(x,y,z,t)){
+Var::Var(size_t x, size_t y, size_t z, size_t t) : data(Tensor(x,y,z,t)) {
     index = tape.push_0();
     tape.push_grad(data.shape);
 }
 
 // Backpropagates using the chain rule along the leaf nodes
-void Var::evaluate_leaves()const{
+void Var::evaluate_leaves() const {
     tape.grads[index].ones();
     for(size_t i=index+1; i-- >0;){
         auto &gradient = tape.grads[i];
@@ -108,21 +107,21 @@ void Var::evaluate_leaves()const{
             tape.grads[node.parents[1]] += node.weights[1].t() * gradient;
 
         }
-        else if(node.type == scalar){
-            if(w1_shape == g_shape){
+        else if(node.type == scalar) {
+            if(w1_shape == g_shape) {
                 tape.grads[node.parents[0]] += gradient % node.weights[0];
             }
-            if(w2_shape == g_shape){
+            if(w2_shape == g_shape) {
                 tape.grads[node.parents[1]] += gradient % node.weights[1];
             }
         }
-        else if(node.type == reduct){
+        else if(node.type == reduct) {
             tape.grads[node.parents[0]] += gradient * node.weights[0];
         }
     } 
 }
 
-Tensor Var::grad()const{ return tape.grads[index]; }
+Tensor Var::grad() const { return tape.grads[index]; }
 
 // Access operators
 double& Var::operator()(size_t x, size_t y, size_t z, size_t t) {
