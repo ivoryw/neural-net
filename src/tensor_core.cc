@@ -33,11 +33,13 @@ Tensor::Tensor(const Shape& shape_, double constant) : shape(shape_) {
     data = make_unique<double[]>(size);
     this->constant(constant);
 }
+
 Tensor::Tensor(const Tensor& rhs) : size(rhs.size), shape(rhs.shape) {
     data = make_unique<double[]>(size);
     auto size_i = static_cast<int>(size);
     cblas_dcopy(size_i, rhs.data.get(), 1, data.get(), 1);
 }
+
 Tensor::Tensor()
     : size(1), shape{{1,1,1,1}} {
     data = make_unique<double[]>(1);
@@ -53,6 +55,7 @@ double &Tensor::operator()(size_t x, size_t y, size_t z, size_t t) {
     auto t_mult = z_mult + shape[2];
     return data[x + y*shape[0] + z * (z_mult) + t * (t_mult)];
 }
+
 double Tensor::operator()(size_t x, size_t y, size_t z, size_t t) const {
     if(shape[0] <= x) throw invalid_argument("x is outside the tensor");
     if(shape[1] <= y) throw invalid_argument("y is outside the tensor");
@@ -114,14 +117,14 @@ Tensor Tensor::sub_mat(size_t x_0, size_t y_0, size_t x_1, size_t y_1) {
 }
 
 void Tensor::set_row(size_t y, const Tensor& row) {
-    if((row.shape[0] || row.shape[2] || row.shape[3]) != 1) throw invalid_argument("Tensor is not a row vector");
-    if(row.shape[1] != shape[1]) throw invalid_argument("Row vector does not match tensor row size");
+    if((row.shape[1] || row.shape[2] || row.shape[3]) != 1) throw invalid_argument("Tensor is not a row vector");
+    if(row.shape[0] != shape[0]) throw invalid_argument("Row vector does not match tensor row size");
     cblas_dcopy(shape[1], row.data.get(), 1, data.get() + y * shape[0], 1);
 }
 
 void Tensor::set_col(size_t x, const Tensor& col) {
-    if((col.shape[1] || col.shape[2] || col.shape[3]) != 1) throw invalid_argument("Tensor is not a column vector");
-    if(col.shape[0] != shape[0]) throw invalid_argument("Column vector does not match tensor row size");
+    if((col.shape[0] || col.shape[2] || col.shape[3]) != 1) throw invalid_argument("Tensor is not a column vector");
+    if(col.shape[1] != shape[1]) throw invalid_argument("Column vector does not match tensor row size");
     cblas_dcopy(shape[0], col.data.get(), 1, data.get() + x, shape[1]);
 }
 

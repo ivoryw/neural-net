@@ -101,6 +101,8 @@ class Tensor {
         void operator/=(double);
         void operator%=(const Tensor&);
         
+        bool operator==(const Tensor&);
+        
         // Transpose
         Tensor t()const;
         // Dot product
