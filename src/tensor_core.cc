@@ -1,6 +1,6 @@
 /**
     Tensor core
-    Intitialisers and access operators for tensor objects
+    Constructors and access operators for tensor objects
 */
 #include "tensor.hpp"
 
@@ -67,7 +67,7 @@ Tensor Tensor::row(size_t y) {
     if(y >= data[1]) throw invalid_argument("y is outside the matrix");
     Tensor r(shape[0]);
     auto data_start = data.get() + y * shape[0];
-    cblas_dcopy(shape[0], data_start, 1, r.data.get(), 1);
+    cblas_dcopy(shape[1], data_start, 1, r.data.get(), 1);
     return r;
 }
 
@@ -111,6 +111,26 @@ Tensor Tensor::sub_mat(size_t x_0, size_t y_0, size_t x_1, size_t y_1) {
         cblas_dcopy(x, row_ptr, 1, s_row_ptr, 1);
     } 
     return s;
+}
+
+void Tensor::set_row(size_t y, const Tensor& row) {
+    if((row.shape[0] || row.shape[2] || row.shape[3]) != 1) throw invalid_argument("Tensor is not a row vector");
+    if(row.shape[1] != shape[1]) throw invalid_argument("Row vector does not match tensor row size");
+    cblas_dcopy(shape[1], row.data.get(), 1, data.get() + y * shape[0], 1);
+}
+
+void Tensor::set_col(size_t x, const Tensor& col) {
+    if((col.shape[1] || col.shape[2] || col.shape[3]) != 1) throw invalid_argument("Tensor is not a column vector");
+    if(col.shape[0] != shape[0]) throw invalid_argument("Column vector does not match tensor row size");
+    cblas_dcopy(shape[0], col.data.get(), 1, data.get() + x, shape[1]);
+}
+
+void Tensor::set_slice(size_t z, const Tensor& slice) {
+    if((slice.shape[2] || slice.shape[3]) != 1) throw invalid_argument("Slice is not a matrix");
+    if(slice.shape[0] != shape[0] || slice.shape[1] != slice.shape[1]) {
+        throw invalid_argument("Slice does not match tensor profile");
+    } 
+    cblas_dcopy(slice.size, slice.data.get(), 1, data.get() + z * slice.size, 1);
 }
 
 } // namespace nn
