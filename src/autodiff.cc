@@ -1,8 +1,3 @@
-/**
-    AutoDiff
-    A module for handling automatic differentiation.
- */
-
 #include "autodiff.hpp"
 
 #include <utility>
@@ -130,7 +125,7 @@ void Var::evaluate_leaves()const{
 Tensor Var::grad()const{ return tape.grads[index]; }
 
 // Access operators
-double& Var::operator()(size_t x, size_t y, size_t z, size_t t){
+double& Var::operator()(size_t x, size_t y, size_t z, size_t t) {
     return data(x,y,z,t);
 }
 
@@ -138,7 +133,7 @@ double Var::operator()(size_t x, size_t y, size_t z, size_t t) const {
     return data(x,y,z,t);
 }
 
-std::ostream& operator<<(std::ostream& os, const Var& rhs){
+std::ostream& operator<<(std::ostream& os, const Var& rhs) {
     os << "Tensor:" << std::endl;
     os << rhs.data;
     os << "Gradient:" << std::endl;
@@ -151,7 +146,7 @@ std::ostream& operator<<(std::ostream& os, const Var& rhs){
 // these weights are evaluated using standard differentiation methods
 // A new node is created on the tape with these weights and links to the
 // parent variables
-Var Var::operator+(const Var& y)const{
+Var Var::operator+(const Var& y) const {
     auto new_data = data + y.data;
     auto x_weight = Tensor(data.shape, 1);
     auto y_weight = Tensor(data.shape, 1);
@@ -160,7 +155,7 @@ Var Var::operator+(const Var& y)const{
     return Var(new_data, new_index);
 }
 
-Var Var::operator-(const Var& y)const{
+Var Var::operator-(const Var& y) const {
     auto new_data = data - y.data;
     auto x_weight = Tensor(data.shape, 1);
     auto y_weight = Tensor(data.shape, -1);
@@ -169,7 +164,7 @@ Var Var::operator-(const Var& y)const{
     return Var(new_data, new_index);
 }
 
-Var Var::operator%(const Var& y)const{
+Var Var::operator%(const Var& y) const {
     auto new_data = data % y.data;
     auto x_weight = y.data; 
     auto y_weight = data;
@@ -178,7 +173,7 @@ Var Var::operator%(const Var& y)const{
     return Var(new_data, new_index);
 }
 
-Var Var::operator/(const Var& y)const{
+Var Var::operator/(const Var& y) const {
     auto x_weight = 1.0 / y.data;
     auto y_weight = 2.0 * data / (y.data % y.data);
     auto new_data = data / y.data;
@@ -187,7 +182,7 @@ Var Var::operator/(const Var& y)const{
     return Var(new_data, new_index);
 }
 
-Var Var::operator*(const Var& y)const{
+Var Var::operator*(const Var& y) const {
     auto x_weight = y.data;
     auto y_weight = data;
     auto new_data = data * y.data;
@@ -196,7 +191,7 @@ Var Var::operator*(const Var& y)const{
     return Var(new_data, new_index);
 }
 
-Var operator*(double x, const Var& y){
+Var operator*(double x, const Var& y) {
     auto weight = Tensor(y.data.shape, x);
     auto new_data = x * y.data;
     auto new_index = tape.push_1(y.index, weight);
@@ -212,13 +207,13 @@ void Var::operator/=(const Var& y){ *this = *this / y; }
 void Var::operator*=(const Var& y){ *this = *this * y; }
 void Var::operator%=(const Var& y){ *this = *this % y; }
 
-Var pow(const Var &x, double y){
+Var pow(const Var &x, double y) {
     auto x_weight = y * nn::pow(x.data, y - 1);
     auto new_index = tape.push_1(x.index, x_weight);
     return Var(pow(x.data, y), new_index);
 }
 
-Var pow(const Var &x, const Var &y){
+Var pow(const Var &x, const Var &y) {
     auto x_weight = y.data % nn::pow(x.data, y.data-1);
     auto pow_x_y = nn::pow(x.data,y.data);
     auto y_weight = pow_x_y * nn::log(x.data);
@@ -231,50 +226,50 @@ Var pow(const Var &x, const Var &y){
 //    return var(sqrt(x.data), new_index);
 //}
 //
-//var exp(const var &x){
+//var exp(const var &x) {
 //    auto exp_x = tape.push_1(x.index, x.data * nn::exp(x.data));
 //    auto new_index = exp_x;
 //    return var(exp_x, new_index);
 //}
 //
-Var log(const Var &x){
+Var log(const Var &x) {
     auto new_index = tape.push_1(x.index, 1 / x.data);
     return Var(nn::log(x.data), new_index);
 }
 
-Var sin(const Var &x){
+Var sin(const Var &x) {
     auto new_index = tape.push_1(x.index, nn::cos(x.data));
     return Var(nn::sin(x.data), new_index);
 }
 
-Var cos(const Var &x){
+Var cos(const Var &x) {
     auto new_index = tape.push_1(x.index, nn::sin(x.data) * -1.0);
     return Var(nn::cos(x.data), new_index);
 }
 
-Var tan(const Var &x){
+Var tan(const Var &x) {
     auto cos_x = nn::cos(x.data);
     auto new_index = tape.push_1(x.index, 1.0 / (cos_x * cos_x));
     return Var(nn::tan(x.data), new_index);
 }
 
-Var asin(const Var &x){
+Var asin(const Var &x) {
     auto weight = 1.0 / nn::sqrt(1.0 - x.data * x.data);
     auto new_index = tape.push_1(x.index, weight);
     return Var(nn::asin(x.data), new_index);
 }
 
-Var acos(const Var &x){
+Var acos(const Var &x) {
     auto new_index = tape.push_1(x.index, -1.0 / nn::sqrt(1.0 - x.data * x.data));
     return Var(nn::acos(x.data), new_index);
 }
 
-Var atan(const Var &x){
+Var atan(const Var &x) {
     auto new_index = tape.push_1(x.index, 1.0 / (1.0 + x.data * x.data));
     return Var(atan(x.data), new_index);
 }
 
-Var Var::abs_sum(){
+Var Var::abs_sum() {
     auto new_index = tape.push_1(index, Tensor(data.shape, 1), reduct);
     auto double_new_data = data.abs_sum();
     Tensor new_data(1);
@@ -282,7 +277,8 @@ Var Var::abs_sum(){
     tape.push_grad(new_data.shape);
     return Var(new_data, new_index);
 }
-Var Var::sum(){
+
+Var Var::sum() {
     auto new_index = tape.push_1(index, Tensor(data.shape, 1), reduct);
     auto double_new_data = data.sum();
     Tensor new_data(1);
@@ -291,7 +287,7 @@ Var Var::sum(){
     return Var(new_data, new_index);
 }
 
-Var conv_1d(const Var& x, const Var& y){
+Var conv_1d(const Var& x, const Var& y) {
     auto new_data = nn::conv_1d(x.data, y.data);
     auto x_weight = nn::conv_1d(Tensor(x.data.shape, 1), y.data);
     auto y_weight = nn::conv_1d(x.data, Tensor(y.data.shape, 1));
@@ -300,7 +296,7 @@ Var conv_1d(const Var& x, const Var& y){
     return Var(new_data, new_index);
 }
 
-//var conv2d(const var& x, const var& weight, size_t stride, size_t kernel){
+//var conv2d(const Var& x, const Var& weight, size_t stride, size_t kernel) {
 //    auto new_value = nn::conv2d(x.data, weight.data, stride, kernel);
 //    auto x_weight = weight.data;
 //    auto y_weight = x.data;

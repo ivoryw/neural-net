@@ -1,31 +1,37 @@
-#ifndef AUTOGRAD_H
-#define AUTOGRAD_H
+/**
+    AutoDiff
+    A module for handling automatic differentiation.
+ */
+
+#ifndef AUTODIFF_H
+#define AUTODIFF_H
 
 #include "tensor.hpp"
 
-namespace autodiff{
+namespace autodiff {
+ 
+// Forward declarations   
+class Var;
     
-    class Var;
-    
-    Var pow(const Var&, double);
-    Var pow(const Var&, const Var&);
-    Var sqrt(const Var&);
-    Var exp(const Var&);
-    Var log(const Var&);
-    Var sin(const Var&);
-    Var cos(const Var&);
-    Var tan(const Var&);
-    Var asin(const Var&);
-    Var acos(const Var&);
-    Var atan(const Var&);
-    Var conv_1d(const Var&, const Var&);
-    Var conv_2d(const Var&, const Var&, size_t, size_t);
+Var pow(const Var&, double);
+Var pow(const Var&, const Var&);
+Var sqrt(const Var&);
+Var exp(const Var&);
+Var log(const Var&);
+Var sin(const Var&);
+Var cos(const Var&);
+Var tan(const Var&);
+Var asin(const Var&);
+Var acos(const Var&);
+Var atan(const Var&);
+Var conv_1d(const Var&, const Var&);
+Var conv_2d(const Var&, const Var&, size_t, size_t);
 
 /**
     Var
     An automatically differentiable variable
 */
-class Var{
+class Var {
     size_t index;
 
 public:
@@ -44,7 +50,7 @@ public:
     void evaluate_leaves() const;
 
     // Returns the last evaluated gradient
-    nn::Tensor grad()const;
+    nn::Tensor grad() const;
 
     // Element access using a zero index
     double& operator()(size_t, size_t=0, size_t=0, size_t=0);
@@ -53,18 +59,19 @@ public:
     double operator()(size_t, size_t=0, size_t=0, size_t=0) const;
 
     // Pointwise tensor addition
-    Var operator+(const Var&)const;
+    Var operator+(const Var&) const;
 
     // Pointwise tensor subtraction
-    Var operator-(const Var&)const;
+    Var operator-(const Var&) const;
 
     // Matrix multiplication
-    Var operator*(const Var&)const;
+    Var operator*(const Var&) const;
 
     // Pointwise matrix multiplication
-    Var operator%(const Var&)const;
+    Var operator%(const Var&) const;
+
     // Pointwise matrix division
-    Var operator/(const Var&)const;
+    Var operator/(const Var&) const;
 
     void operator=(const nn::Tensor&);
     void operator+=(const Var&);
@@ -79,6 +86,7 @@ public:
     friend std::ostream& operator<<(std::ostream&, const Var&);
     
     friend Var pow(const Var&, double);
+    // Pointwise exponentials
     friend Var pow(const Var&, const Var&);
     friend Var sqrt(const Var&);
     friend Var exp(const Var&);
@@ -93,13 +101,13 @@ public:
     friend Var conv_2d(const Var&, const Var&, size_t, size_t);
 
     // Initialisation with a normal distibution
-    void randn(int mean=0, int var=1){ data.randn(mean, var); }
+    void randn(int mean=0, int var=1) { data.randn(mean, var); }
     Var abs_sum();
     Var sum();
 
-    nn::Tensor::Iterator begin(){ return data.begin(); }
-    nn::Tensor::Iterator end(){ return data.end(); }
-    size_t size(){ return data.size; }
+    nn::Tensor::Iterator begin() { return data.begin(); }
+    nn::Tensor::Iterator end() { return data.end(); }
+    size_t size() { return data.size; }
 };
 }
-#endif //AUTOGRAD_H
+#endif //AUTODIFF_H
