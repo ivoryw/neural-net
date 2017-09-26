@@ -5,6 +5,7 @@
 #include "tensor.hpp"
 
 #include <numeric>
+#include <iostream>
 
 #ifdef __APPLE__
 #include <Accelerate/Accelerate.h>
@@ -70,7 +71,7 @@ Tensor Tensor::row(size_t y) {
     if(y >= data[1]) throw invalid_argument("y is outside the matrix");
     Tensor r(shape[0]);
     auto data_start = data.get() + y * shape[0];
-    cblas_dcopy(shape[1], data_start, 1, r.data.get(), 1);
+    cblas_dcopy(shape[0], data_start, 1, r.data.get(), 1);
     return r;
 }
 
