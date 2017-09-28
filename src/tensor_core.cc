@@ -5,7 +5,6 @@
 #include "tensor.hpp"
 
 #include <numeric>
-#include <iostream>
 
 #ifdef __APPLE__
 #include <Accelerate/Accelerate.h>
